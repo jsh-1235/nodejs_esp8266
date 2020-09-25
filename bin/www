@@ -4,16 +4,16 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('esp8266:server');
-var http = require('http');
+var app = require("../app");
+var debug = require("debug")("esp8266:server");
+var http = require("http");
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+var port = normalizePort(process.env.PORT || "3000");
+app.set("port", port);
 
 /**
  * Create HTTP server.
@@ -26,8 +26,132 @@ var server = http.createServer(app);
  */
 
 server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+server.on("error", onError);
+server.on("listening", onListening);
+
+//===========================================================================
+
+var net = require("net");
+
+function sendApp(socket, message) {
+  try {
+    var size = String(message.length);
+
+    var buffer = new Buffer([size.charAt(0)]);
+
+    socket.write(buffer);
+
+    socket.write(message);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function sendDevice(socket, message) {
+  try {
+    socket.write(message + "\r");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function getSingleData(data) {
+  var result = String(data);
+
+  var value = result.split("\r", 1);
+
+  console.log("received : " + value);
+
+  for (var i = 0; i < value.length; i++) {
+    io.sockets.emit("update", value[i]);
+
+    //send(socket, String(value[i]));
+  }
+}
+
+function getMultiData(data) {
+  var result = {
+    depth: String(data[0]),
+    volume: String(data[1]),
+  };
+
+  console.log("received : " + result.depth + " / " + +result.volume);
+
+  io.sockets.emit("update", result);
+}
+
+var tcpSocket = null;
+
+let tcpServer = net.createServer(function (socket) {
+  console.log(socket.address().address + " is connected.");
+
+  tcpSocket = socket;
+
+  socket.on("data", function (data) {
+    try {
+      getMultiData(data);
+    } catch (error) {
+      console.log("error : " + error);
+    }
+  });
+
+  socket.on("connect", function (data) {
+    console.log("connect : " + data.address().address);
+  });
+
+  socket.on("end", function () {
+    console.log("client end");
+  });
+
+  socket.on("close", function () {
+    console.log("Client is disconnected.");
+  });
+
+  socket.on("error", function (error) {
+    console.log("error : " + error);
+  });
+});
+
+tcpServer.listen(33333, function () {
+  console.log("Listening on 33333");
+});
+
+tcpServer.on("listening", function () {
+  console.log("Server : " + tcpServer.address());
+});
+
+tcpServer.on("close", function () {
+  console.log("Server is disconnected.");
+});
+
+//===========================================================================
+var io = require("socket.io").listen(server);
+
+//var system = io.of('/system');
+
+io.sockets.on("connection", function (socket) {
+  socket.on("On", function (data) {
+    if (tcpSocket != null) {
+      sendDevice(tcpSocket, data);
+
+      //sendApp(tcpSocket, data);
+    }
+
+    console.log(data);
+  });
+
+  socket.on("Off", function (data) {
+    if (tcpSocket != null) {
+      sendDevice(tcpSocket, data);
+
+      //sendApp(tcpSocket, data);
+    }
+
+    console.log(data);
+  });
+
+  console.log("socket.io is connected.");
+});
 
 /**
  * Normalize a port into a number, string, or false.
@@ -54,22 +178,20 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-  if (error.syscall !== 'listen') {
+  if (error.syscall !== "listen") {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
       process.exit(1);
       break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
       process.exit(1);
       break;
     default:
@@ -83,8 +205,6 @@ function onError(error) {
 
 function onListening() {
   var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+  debug("Listening on " + bind);
 }
