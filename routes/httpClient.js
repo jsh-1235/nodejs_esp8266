@@ -2,9 +2,13 @@
 var express = require("express");
 var router = express.Router();
 
+let potentiometer = false;
+
+global.potentiometer = potentiometer;
+
 /* GET httpClient page. */
-router.get("/", function (req, res) {
-  res.render("httpClient", { title: "HTTP Client", value: 0 });
+https: router.get("/", function (req, res) {
+  res.render("httpClient", { title: "HTTP Client", value: potentiometer });
 });
 
 router.get("/request/:value", function (req, res) {
@@ -24,10 +28,12 @@ router.get("/request/:value", function (req, res) {
 router.get("/request", function (req, res) {
   var value = req.query.value;
 
-  if (value) {
-    //res.send(value);
+  potentiometer = value;
 
-    res.render("httpClient", { title: "HTTP Client", value: value });
+  if (value) {
+    res.send(value);
+
+    //res.render("httpClient", { title: "HTTP Client", value: value });
   } else {
     res.status(500).json({ status_code: 500, status_message: "The data does not exist." });
   }
