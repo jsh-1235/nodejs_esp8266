@@ -112,8 +112,12 @@ let tcpServer = net.createServer(function (socket) {
   });
 });
 
-tcpServer.listen(33333, function () {
-  console.log("Listening on 33333");
+// tcpServer.listen(33333, function () {
+//   console.log("Listening on 33333");
+// });
+
+tcpServer.listen(80, function () {
+  console.log("Listening on 80");
 });
 
 tcpServer.on("listening", function () {
