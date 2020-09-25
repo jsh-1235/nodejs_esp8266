@@ -6,7 +6,7 @@ var path = require("path");
 router.get("/", function (req, res, next) {
   var root = path.resolve();
 
-  var filename = root + "/public/html/server.html";
+  var filename = root + "/public/html/tcpServer.html";
 
   console.log("Path : " + filename);
 
