@@ -63,7 +63,7 @@ function getString(data) {
   console.log("received : " + value);
 
   for (var i = 0; i < value.length; i++) {
-    io.sockets.emit("update", value[i]);
+    io.sockets.emit("update_tcp", value[i]);
   }
 }
 
@@ -75,7 +75,7 @@ function getArray(data) {
 
   console.log("received : " + result.depth + " / " + +result.volume);
 
-  io.sockets.emit("update", result);
+  io.sockets.emit("update_tcp", result);
 }
 
 var tcpSocket = null;
@@ -124,11 +124,9 @@ tcpServer.on("close", function () {
 
 //===========================================================================
 let io = require("socket.io").listen(server);;
-
 global.io = io;
 
 //var io = require("socket.io").listen(server);
-
 //var system = io.of('/system');
 
 io.sockets.on("connection", function (socket) {

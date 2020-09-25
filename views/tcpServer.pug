@@ -1,0 +1,107 @@
+extends layout
+
+block content
+  h1= title
+  hr
+  div
+    p(id="value" style="display:block") Value
+    p(id="info" style="display:block")
+    button(id="btnOn" type="button" class="btn btn-outline-primary mr-1" style="margin:0px;") ON
+    button(id="btnOff" type="button" class="btn btn-outline-primary mr-1" style="margin:0px;") OFF
+    hr
+    canvas(id="canvasBarGraphVolume" width="600" height="200" style="background-color:hotpink; border: 0px solid blue; position:relative; margin:0px; left:10px; top:10px;")
+    hr 
+    canvas(id="canvasLineGraphDepth" width="600" height="200" style="display:inline; background-color:greenyellow;  position:relative; margin:0px; border: 0px solid blue; left:10px; top:10px;")
+
+block script 
+  script(src="../javascripts/library.js")
+  script(src="../javascripts/shape.js")
+  script.
+    var depthLineGraph;
+
+    function drawLine(depth, volume) {
+      try {
+        var canvasDepthGraph = document.getElementById("canvasLineGraphDepth");
+
+        if (canvasDepthGraph.getContext) {
+          var contextDepth = canvasDepthGraph.getContext("2d");
+
+          var depthHeight = (depth * 200) / 200;
+
+          //$("#value").text("{0} / {1} / {2}/ {3}".format(canvas.style.left, canvas.style.top, canvas.width, canvas.height));
+
+          if (depthLineGraph == null) {
+            depthLineGraph = new LineGraph(0, 0, canvasDepthGraph.width, canvasDepthGraph.height, "red");
+
+            depthLineGraph.setLineWidth(1);
+          }
+
+          depthLineGraph.add(depthHeight);
+
+          depthLineGraph.draw(contextDepth);
+        } else {
+          alert("Canvas is not supported.");
+        }        
+      } catch (e) {
+        alert(e);
+      }
+    }
+
+    function drawBar(value) {
+      try {
+        var canvas = document.getElementById("canvasBarGraphVolume");
+
+        if (canvas.getContext) {
+          var context = canvas.getContext("2d");
+
+          var height = (value * 200) / 136;
+
+          var context = canvas.getContext("2d", { alpha: false });
+
+          var barGraph = new BarGraph(0, 0, 100, 500, "green");
+
+          barGraph.draw(context, height);
+        } else {
+          alert("Canvas is not supported.");
+        }
+      } catch (e) {
+        alert(e);
+      }
+    }
+
+    var count = 0;
+
+    $(document).ready(function () {
+      var socket = io.connect();
+
+      socket.on("update_tcp", function (data) {
+        try {
+          $("#value").text(format("Data : %%", data));
+          if (data) {
+            var depth = parseInt(data.depth);
+
+            var volume = parseInt(data.volume);
+
+            $("#value").text("Depth : {0} Volume : {1}".format(depth, volume));
+
+            drawBar(volume);
+
+            drawLine(depth, volume);
+          } else {
+            $("#value").text(data);
+          }
+
+          $("#info").text("Count : {0}".format(count++));
+        } catch (e) {
+          $("#value").text("Error : " + e);
+        }
+      });
+
+      $("#btnOn").click(function () {
+        socket.emit("On", "ON");
+      });
+
+      $("#btnOff").click(function () {
+        socket.emit("Off", "OFF");
+      });
+    });
