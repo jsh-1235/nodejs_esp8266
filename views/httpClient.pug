@@ -3,5 +3,27 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  p Value is 
-    span #{value}
+  p Value is #{value}
+  h3(id="value") 
+    
+
+block script 
+  script.
+    var socket = io();
+  
+    socket.on('update', function (value) {
+      Refresh(value);      
+    });
+
+    function Refresh(value){    
+      $('#value').text(value);
+
+      console.log(value);
+    }
+
+    window.addEventListener("load", function(){                
+    });      
+
+    $(document).ready(function() {   
+      //alert("Hi"); 
+    });            

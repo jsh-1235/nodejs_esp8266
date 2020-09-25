@@ -34,6 +34,8 @@ router.get("/request", function (req, res) {
     res.send(value);
 
     //res.render("httpClient", { title: "HTTP Client", value: value });
+
+    io.sockets.emit("update", value);
   } else {
     res.status(500).json({ status_code: 500, status_message: "The data does not exist." });
   }
