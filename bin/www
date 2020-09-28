@@ -60,11 +60,11 @@ function getString(data) {
 
   var value = result.split("\r", 1);
 
-  console.log("received : " + value);
+  //console.log("received : " + value);
 
-  for (var i = 0; i < value.length; i++) {
-    io.sockets.emit("update_tcp", value[i]);
-  }
+  // for (var i = 0; i < value.length; i++) {
+  //   io.sockets.emit("update_tcp", value[i]);
+  // }
 }
 
 function getArray(data) {
@@ -73,9 +73,9 @@ function getArray(data) {
     volume: String(data[1]),
   };
 
-  console.log("received : " + result.depth + " / " + +result.volume);
+  //console.log("received : " + result.depth + " / " + +result.volume);
 
-  io.sockets.emit("update_tcp", result);
+  //io.sockets.emit("update_tcp", result);
 }
 
 var tcpSocket = null;
@@ -123,17 +123,16 @@ tcpServer.on("close", function () {
 });
 
 //===========================================================================
-let io = require("socket.io").listen(server);;
+let io = require("socket.io").listen(server);
 global.io = io;
 
 //var io = require("socket.io").listen(server);
 //var system = io.of('/system');
 
 io.sockets.on("connection", function (socket) {
-  socket.on("On", function (data) {
+  socket.on("On", function (data) { 
     if (tcpSocket != null) {
       sendDevice(tcpSocket, data);
-
       //sendApp(tcpSocket, data);
     }
 
@@ -143,11 +142,28 @@ io.sockets.on("connection", function (socket) {
   socket.on("Off", function (data) {
     if (tcpSocket != null) {
       sendDevice(tcpSocket, data);
-
       //sendApp(tcpSocket, data);
     }
 
     console.log(data);
+  });
+
+  socket.on("control", function (data) {
+    
+    //io.sockets.emit("control", data.led);
+
+    if(data.led == "ON"){
+      io.sockets.emit("1");
+    }else{
+      io.sockets.emit("0");
+    }
+
+    console.log(data.led);
+  });
+
+  socket.on("timer", function (data) {
+    console.log(data);
+    console.log(data.now);
   });
 
   console.log("socket.io is connected.");

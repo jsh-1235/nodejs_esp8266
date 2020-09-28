@@ -1,0 +1,28 @@
+extends layout
+
+block content
+  h1= title
+  hr
+  div    
+    p(id="info" style="display:block")
+    button(id="btnOn" type="button" class="btn btn-outline-primary mr-1" style="margin:0px;") ON
+    button(id="btnOff" type="button" class="btn btn-outline-primary mr-1" style="margin:0px;") OFF
+   
+block script 
+  script.
+    var socket = io.connect();
+      //socket.on("update_tcp", function (data) {
+       
+      //});
+
+      $("#btnOn").click(function () {        
+        socket.emit("control", {"led" : "ON"});
+      });
+
+      $("#btnOff").click(function () {
+        socket.emit("control", {"led" : "OFF"});
+      });
+
+    $(document).ready(function () {
+ 
+    });
