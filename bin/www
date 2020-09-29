@@ -130,7 +130,7 @@ global.io = io;
 //var system = io.of('/system');
 
 io.sockets.on("connection", function (socket) {
-  socket.on("On", function (data) { 
+  socket.on("On", function (data) {
     if (tcpSocket != null) {
       sendDevice(tcpSocket, data);
       //sendApp(tcpSocket, data);
@@ -149,12 +149,11 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on("control", function (data) {
-    
     //io.sockets.emit("control", data.led);
 
-    if(data.led == "ON"){
+    if (data.led == "ON") {
       io.sockets.emit("1");
-    }else{
+    } else {
       io.sockets.emit("0");
     }
 
@@ -164,6 +163,11 @@ io.sockets.on("connection", function (socket) {
   socket.on("timer", function (data) {
     console.log(data);
     console.log(data.now);
+  });
+
+  socket.on("update", function (data) {
+    io.sockets.emit("update_page", data);
+    console.log(data);
   });
 
   console.log("socket.io is connected.");
